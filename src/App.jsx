@@ -1,6 +1,6 @@
+import React, { useState } from 'react';
 import 'bulma/css/bulma.css';
 import './App.scss';
-import { useState } from 'react';
 
 export const goodsFromServer = [
   'Dumplings',
@@ -15,65 +15,78 @@ export const goodsFromServer = [
   'Garlic',
 ];
 
+const prepareGoods = (goods, { field, isReverse }) => {
+  const sortedGoods = [...goods];
+
+  if (field === 'alphabetical') {
+    sortedGoods.sort();
+  } else if (field === 'length') {
+    sortedGoods.sort((a, b) => a.length - b.length);
+  }
+
+  if (isReverse) {
+    sortedGoods.reverse();
+  }
+
+  return sortedGoods;
+};
+
 export const App = () => {
   const [visibleGoods, setVisibleGoods] = useState(goodsFromServer);
   const [isReversed, setIsReversed] = useState(false);
-  const [sortedGoods, setSortedGoods] = useState(goodsFromServer);
-  const [activeButton, setActiveButton] = useState('');
-  const [hasChanged, setHasChanged] = useState(false);
+  const [sortField, setSortField] = useState(null);
+  const [originalGoods] = useState(goodsFromServer);
 
-  const applyReverse = goods => {
-    return isReversed ? [...goods].reverse() : goods;
+  const handleSortByName = () => {
+    setSortField('alphabetical');
+    setVisibleGoods(
+      prepareGoods(goodsFromServer, {
+        field: 'alphabetical',
+        isReverse: isReversed,
+      }),
+    );
   };
 
-  const sortByName = () => {
-    const sorted = [...goodsFromServer].sort();
-
-    setSortedGoods(sorted);
-    setVisibleGoods(applyReverse(sorted));
-    setActiveButton('alphabetical');
-    setHasChanged(true);
+  const handleSortByLength = () => {
+    setSortField('length');
+    setVisibleGoods(
+      prepareGoods(goodsFromServer, { field: 'length', isReverse: isReversed }),
+    );
   };
 
-  const sortByLength = () => {
-    const sorted = [...goodsFromServer].sort((a, b) => a.length - b.length);
-
-    setSortedGoods(sorted);
-    setVisibleGoods(applyReverse(sorted));
-    setActiveButton('length');
-    setHasChanged(true);
+  const handleReverse = () => {
+    setIsReversed(!isReversed);
+    setVisibleGoods(
+      prepareGoods(goodsFromServer, {
+        field: sortField,
+        isReverse: !isReversed,
+      }),
+    );
   };
 
-  const reverseGoods = () => {
-    setIsReversed(prev => !prev);
-    setVisibleGoods([...sortedGoods].reverse());
-    setActiveButton('reverse');
-    setHasChanged(true);
-  };
-
-  const resetGoods = () => {
-    setSortedGoods(goodsFromServer);
-    setVisibleGoods(goodsFromServer);
+  const handleReset = () => {
+    setVisibleGoods(originalGoods);
+    setSortField(null);
     setIsReversed(false);
-    setActiveButton('');
-    setHasChanged(false);
   };
+
+  const showResetButton = visibleGoods.join() !== originalGoods.join();
 
   return (
     <div className="section content">
       <div className="buttons">
         <button
           type="button"
-          className={`button is-info ${activeButton === 'alphabetical' ? '' : 'is-light'}`}
-          onClick={sortByName}
+          className={`button is-info ${sortField === 'alphabetical' ? '' : 'is-light'}`}
+          onClick={handleSortByName}
         >
           Sort alphabetically
         </button>
 
         <button
           type="button"
-          className={`button is-success ${activeButton === 'length' ? '' : 'is-light'}`}
-          onClick={sortByLength}
+          className={`button is-success ${sortField === 'length' ? '' : 'is-light'}`}
+          onClick={handleSortByLength}
         >
           Sort by length
         </button>
@@ -81,16 +94,16 @@ export const App = () => {
         <button
           type="button"
           className={`button is-warning ${isReversed ? '' : 'is-light'}`}
-          onClick={reverseGoods}
+          onClick={handleReverse}
         >
           Reverse
         </button>
 
-        {hasChanged && (
+        {showResetButton && (
           <button
             type="button"
             className="button is-danger"
-            onClick={resetGoods}
+            onClick={handleReset}
           >
             Reset
           </button>
@@ -107,3 +120,5 @@ export const App = () => {
     </div>
   );
 };
+
+export default App;
