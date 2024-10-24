@@ -70,7 +70,15 @@ export const App = () => {
     setIsReversed(false);
   };
 
-  const showResetButton = visibleGoods.join() !== originalGoods.join();
+  const arraysEqual = (arr1, arr2) => {
+    if (arr1.length !== arr2.length) {
+      return false;
+    }
+
+    return arr1.every((value, index) => value === arr2[index]);
+  };
+
+  const showResetButton = !arraysEqual(visibleGoods, originalGoods);
 
   return (
     <div className="section content">
